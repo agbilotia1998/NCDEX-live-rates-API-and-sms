@@ -38,7 +38,7 @@ app.get('/',function (req,res) {
             }
 
             //console.log(result);
-            res.json(result);
+            res.send(result);
 
             var accountSid = process.env.id;
             var authToken = process.env.token;
