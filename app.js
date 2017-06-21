@@ -3,8 +3,9 @@ var request = require('request');
 var cheerio = require('cheerio');
 var app     = express();
 
-function rates() {
+//function rates() {
 
+app.get('/',function (req,res) {
 
     url = 'https://www.ncdex.com/MarketData/LiveFuturesQuotes.aspx';
 
@@ -36,8 +37,8 @@ function rates() {
                     result = result + json[count].Name + ' ' + json[count].Expiry + ' ' + json[count].Price + '\n';
             }
 
-            console.log(result);
-
+            //console.log(result);
+            res.json(result);
 
             var accountSid = process.env.id;
             var authToken = process.env.token;
@@ -66,9 +67,12 @@ function rates() {
     });
 
 
-}
+//}
 //
-// app.listen('5000', function () {
-//     console.log("App running on port 5000");
+    app.listen('5000', function () {
+        console.log("App running on port 5000");
 //});
-setInterval(rates,30*60*1000);
+//setInterval(rates,30*60*1000);
+
+    });
+});
