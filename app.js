@@ -3,10 +3,7 @@ var request = require('request');
 var cheerio = require('cheerio');
 var app     = express();
 
-//function rates() {
-
-app.get('/',function (req,res) {
-
+function rates() {
     url = 'https://www.ncdex.com/MarketData/LiveFuturesQuotes.aspx';
 
     request(url, function (error, response, html) {
@@ -37,12 +34,11 @@ app.get('/',function (req,res) {
                     result = result + json[count].Name + ' ' + json[count].Expiry + ' ' + json[count].Price + '\n';
             }
 
-            //console.log(result);
-            res.send(result);
+            console.log(result);
 
             var accountSid = process.env.id;
             var authToken = process.env.token;
-//require the Twilio module and create a REST client
+
             var client = require('twilio')(accountSid, authToken);
 
             client.messages.create({
@@ -67,11 +63,11 @@ app.get('/',function (req,res) {
     });
 
 
-//}
-//
-    app.listen('5000'||process.env.PORT, function () {
-        console.log("App running on port 5000");
-});
-//setInterval(rates,30*60*1000);
+}
 
+
+
+app.listen('5000'||process.env.PORT, function () {
+    console.log("App running on port 5000");
 });
+setInterval(rates,10000);
