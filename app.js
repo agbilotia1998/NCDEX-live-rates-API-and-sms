@@ -38,11 +38,14 @@ function rates() {
 
             console.log(result);
 
+
+            var accountSid = process.env.id;
+            var authToken = process.env.token;
 //require the Twilio module and create a REST client
             var client = require('twilio')(accountSid, authToken);
 
             client.messages.create({
-                to: "+91",
+                to: "+917705894165",
                 from: "+12488094534 ",
                 body: result
 
