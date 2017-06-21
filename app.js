@@ -70,4 +70,4 @@ function rates() {
 app.listen('5000'||process.env.PORT, function () {
     console.log("App running on port 5000");
 });
-setInterval(rates,10000);
+setInterval(rates,30*60*1000);
