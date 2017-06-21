@@ -3,7 +3,7 @@ var request = require('request');
 var cheerio = require('cheerio');
 var app     = express();
 
-//function rates() {
+function rates() {
 
 
     url = 'https://www.ncdex.com/MarketData/LiveFuturesQuotes.aspx';
@@ -66,9 +66,9 @@ var app     = express();
     });
 
 
-//}
+}
 
 app.listen('5000', function () {
     console.log("App running on port 5000");
 });
-//setInterval(rates,30*60*1000);
+setInterval(rates,30*60*1000);
