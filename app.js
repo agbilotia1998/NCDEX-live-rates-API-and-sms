@@ -67,8 +67,8 @@ function rates() {
 
 
 }
-
-app.listen('5000', function () {
-    console.log("App running on port 5000");
-});
+//
+// app.listen('5000', function () {
+//     console.log("App running on port 5000");
+//});
 setInterval(rates,30*60*1000);
