@@ -1,49 +1,90 @@
 var express = require('express');
-var request = require('request');
+var config = require('./config');
+var request = require('request').defaults({'proxy': config.proxy});
 var cheerio = require('cheerio');
 var app     = express();
 
+Array.prototype.contains = function(obj) {
+    var i = this.length;
+    while (i--) {
+        if (this[i] == obj) {
+            return true;
+        }
+    }
+    return false;
+};
+
 function rates() {
-    url = 'https://www.ncdex.com/MarketData/LiveFuturesQuotes.aspx';
+    console.log('INn');
+    var opts = {
+        url: 'https://www.ncdex.com/MarketData/LiveFuturesQuotes.aspx',
+        strictSSL: false
+    };
 
-    request(url, function (error, response, html) {
+    request(opts, function (error, response, html) {
         if (!error) {
+            console.log('INNN');
             var $ = cheerio.load(html);
-            var json = [];
-            var arr = [];
+            var jsonData = [];
+            var headerMap = new Map();
+            var data = new Array( $('#ctl00_ContentPlaceHolder3_dgLiveFuturesQuotes tr').length - 1);
             var result = "";
+            var content = "";
+            var row = 0;
+            var column = 0;
+            var items = data.length;
+            var values = $('#dummyHeader tr th').length - 1;
+            var requiredItems = ['Barley', 'CottonSeedOilcake', 'GuarSeed10MT', 'Kapas', 'Mustardseed', 'SoyBean'];
 
-            $('#ctl00_ContentPlaceHolder3_dgLiveFuturesQuotes tr td').each(function (i, elem) {
-                arr[i] = $(this).text();
-                arr[i] = arr[i].replace(/\s/g, '');
+            for(var i = 0; i < items; i++) {
+                data[i] = new Array(values);
+            }
+
+            $('#ctl00_ContentPlaceHolder3_dgLiveFuturesQuotes tr td').each(function (count, element) {
+                content = $(element).text();
+                data[row][column] = content.replace(/\s/g, '');
+
+                if(data[row][column] === ''){
+                    column = 0;
+                    row++;
+                }
+                else {
+                    column += 1;
+                }
             });
 
-            var length = $('#ctl00_ContentPlaceHolder3_dgLiveFuturesQuotes tr').length;
+            $('#dummyHeader tr th').each(function(count, element) {
+               content = $(element).text();
+               content = content.replace(/\s/g, '');
+               headerMap.set(content, count);
+            });
 
+            for (var count = 0; count < items; count++) {
+                var itemName = data[count][headerMap.get('ProductName')];
+                var expiryDate = data[count][headerMap.get('ExpDT')];
+                var highValue = data[count][headerMap.get('High')];
+                var lowValue = data[count][headerMap.get('Low')];
+                var price = data[count][headerMap.get('LTP')];
+                jsonData[count] = {
+                                Name: itemName,
+                                Expiry: expiryDate,
+                                High: highValue,
+                                Low: lowValue,
+                                Price: price
+                              };
 
-            for (var count = 0; count < length - 1; count++) {
-                var Name = arr[count * 15];
-                var Expiry = arr[1 + count * 15];
-                var High = arr[3 + count * 15];
-                var Low = arr[4 + count * 15];
-                var Price = arr[6 + count * 15];
-                json[count] = {Name: Name, Expiry: Expiry, High: High, Low: Low, Price: Price};
-
-                if (json[count].Name == 'Barley' || json[count].Name == 'CottonSeedOilcake' || json[count].Name == 'GuarSeed10MT' || json[count].Name == 'Kapas'
-                    || json[count].Name == 'Mustardseed' || json[count].Name == 'SoyBean')
-                    result = result + json[count].Name + ' ' + json[count].Expiry + ' ' + json[count].Price + '\n';
+                if (requiredItems.contains(jsonData[count].Name))
+                    result = result + jsonData[count].Name + ' ' + jsonData[count].Expiry + ' ' + jsonData[count].Price + '\n';
             }
 
             console.log(result);
-
             var accountSid = process.env.id;
             var authToken = process.env.token;
-
             var client = require('twilio')(accountSid, authToken);
 
             client.messages.create({
                 to: "+917705894165",
-                from: "+12488094534 ",
+                from: "+12488094534",
                 body: result
 
                 //mediaUrl: "https://c1.staticflickr.com/3/2899/14341091933_1e92e62d12_b.jpg",
@@ -57,17 +98,14 @@ function rates() {
             });
 
 
+        } else{
+            console.log(error);
         }
-
-
     });
-
-
 }
-
-
 
 app.listen('5000'||process.env.PORT, function () {
     console.log("App running on port 5000");
+    //rates();
+    setInterval(rates, 30*60*1000);
 });
-setInterval(rates,30*60*1000);
